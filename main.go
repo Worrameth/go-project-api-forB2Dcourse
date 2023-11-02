@@ -51,10 +51,10 @@ func getBookList() ([]Book, error) {
 	return books, nil
 }
 
-func getBook(bookid int) (*Book, error) {
+func getBook(bookID int) (*Book, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	row := Db.QueryRowContext(ctx, `SELECT * FROM books WHERE bookid = ?`, bookid)
+	row := Db.QueryRowContext(ctx, `SELECT * FROM books WHERE bookid = ?`, bookID)
 
 	book := &Book{}
 	err := row.Scan(
@@ -101,7 +101,7 @@ func insertBook(book Book) (int, error) {
 	return int(insertID), nil
 }
 
-func handlerBooks(w http.ResponseWriter, r *http.Request) {
+func handleBooks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		bookList, err := getBookList()
@@ -140,7 +140,7 @@ func handlerBooks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlerBook(w http.ResponseWriter, r *http.Request) {
+func handleBook(w http.ResponseWriter, r *http.Request) {
 	urlPathSegments := strings.Split(r.URL.Path, fmt.Sprintf("%s/", bookPath))
 	if len(urlPathSegments[1:]) > 1 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -198,10 +198,10 @@ func corsMiddleware(handler http.Handler) http.Handler {
 
 func SetupRoutes(apiBasePath string) {
 
-	BooksHandler := http.HandlerFunc(handlerBooks)
+	BooksHandler := http.HandlerFunc(handleBooks)
 	http.Handle(fmt.Sprintf("%s/%s", apiBasePath, bookPath), corsMiddleware(BooksHandler))
 
-	bookHandler := http.HandlerFunc(handlerBook)
+	bookHandler := http.HandlerFunc(handleBook)
 	http.Handle(fmt.Sprintf("%s/%s/", apiBasePath, bookPath), corsMiddleware(bookHandler))
 
 }
